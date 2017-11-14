@@ -26,10 +26,8 @@ export default class State{
             this, '_middleware', createMiddleware(
                 ...middleware.map((middleware)=>(next,update)=>middleware(this,next,update)),
                 (update)=>{
-                    if( typeof update === 'object' ){
-                        extend(this,update);
-                        trigger(this._subscribe,this);
-                    }
+                    if( typeof update === 'object' ) extend(this,update);
+                    trigger(this._subscribe,this);
                     return this;
                 }
             )

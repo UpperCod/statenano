@@ -69,10 +69,8 @@ var State = function State( initial, middleware, subscribe$$1 ){
     methodFixed(
         this, '_middleware', createMiddleware.apply(
             void 0, middleware.map(function (middleware){ return function (next,update){ return middleware(this$1,next,update); }; }).concat( [function (update){
-                if( typeof update === 'object' ){
-                    extend(this$1,update);
-                    trigger(this$1._subscribe,this$1);
-                }
+                if( typeof update === 'object' ) { extend(this$1,update); }
+                trigger(this$1._subscribe,this$1);
                 return this$1;
             }] )
         )

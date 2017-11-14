@@ -1,6 +1,6 @@
 {
   "name": "statenano",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "state management solution for Javascript applications",
   "main": "index.js",
   "scripts": {},
