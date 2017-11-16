@@ -17,7 +17,7 @@ Al instanciar el estado ud podra usar 3 parámetros:
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 let state = new State( [ initialState = {} , middleware = [] ] )
 
@@ -29,7 +29,7 @@ let state = new State( [ initialState = {} , middleware = [] ] )
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 let primaryKey = 0;
 
@@ -63,7 +63,7 @@ ud puede anidar los estados sea para generar estados más complejos, también un
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 // se crea el estado hijo
 let stateChild = new State({

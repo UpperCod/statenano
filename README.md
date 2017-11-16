@@ -17,7 +17,7 @@ When instantiating the state you can use 3 parameters:
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 let state = new State( [ initialState = {} , middleware = [] ] )
 
@@ -29,7 +29,7 @@ This example shows how you can implement an All in a simple way by extending Sta
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 let primaryKey = 0;
 
@@ -63,7 +63,7 @@ You can nest the states either to generate more complex states, also one state c
 
 ```javascript
 
-import {State} from 'statenano';
+import State from 'statenano';
 
 // the son state is created
 let stateSon = new State({
