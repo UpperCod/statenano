@@ -93,4 +93,111 @@ stateSon.update({loading : false})
    })
 ```
 
-.
+
+
+## Comparative
+
+After understanding in a simple way how StateNano operates, I invite you to compare it with the way in which I held the status of my applications for a long time **Redux**, so you can understand some differences and choose the one that best suits your project
+
+### Example Todo Redux
+
+this is a simple example in which everything is concentrated in a file, normally this would have a more complete project root as this repository teaches [Ejemplo Redux TodoMVC](https://github.com/reactjs/redux/tree/master/examples/todomvc/src)
+
+- reducers/todo
+- actions/todo
+- constants/actionsType
+
+``` javascript
+
+store = createStore(reducer)
+
+const ADD_TODO   = 'ADD_TODO';
+const REM_TODO   = 'REM_TODO';
+
+let   primaryKey = 0;
+
+function reducer(state = [],action){
+   switch(action.type){
+       case ADD_TODO:
+           return: state.concat({
+               id   : ++primaryKey,
+               task : action.payload
+           })
+       case REM_TODO:
+           return: state.filter((task)=>task.id !== action.payload )
+       default:
+           return state
+   }
+}
+
+function addTodo( payload ){
+   store.dispatch({
+       type : ADD_TODO, payload
+   })
+}
+
+function remTodo( payload ){
+   store.dispatch({
+       type : REM_TODO, payload
+   })
+}
+
+store.subscribe(()=>{
+   console.log( store.getState() )
+})
+
+```
+
+## StateNano Example
+
+StateNano concentrates everything that interacts with the state in the class that makes it up. the biggest advantage of this is that you can componentize states either for later replication
+
+```javascript
+
+let   primaryKey = 0;
+
+class Todo extends StateNano{
+   addTodo(){
+       let tasks = this.tasks.concat({
+           id   : ++primaryKey,
+           task : action.payload
+       })
+       this.update({tasks})
+   }
+   remTodo(){
+       let tasks = this.tasks.filter((task)=>task.id !== action.payload )
+       this.update({tasks})
+   }
+}
+
+let todo = new Todo({tasks : []})
+
+```
+### Replication example
+
+You could create a state of higher order and this subscribe to the substates. continue to maintain the status of the previous example **All**.
+
+```javascript
+
+let todo_1 = new Todo({tasks : []})
+let todo_2 = new Todo({tasks : []})
+let todo_3 = new Todo({tasks : []})
+
+let masterTodos = new StateNano({
+       todo_1,
+       todo_2,
+       todo_3,
+})
+
+todo_1.subscribe(masterTodos)
+todo_2.subscribe(masterTodos)
+todo_3.subscribe(masterTodos)
+
+masterTodos.subscribe((state)=>{
+   console.log(state.todo_1.tasks)
+   console.log(state.todo_2.tasks)
+   console.log(state.todo_3.tasks)
+})
+
+```
+> in this way any change that occurs within any **todo**, will be notified to the subscribers of **masterTodo**.

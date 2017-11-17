@@ -1,6 +1,5 @@
 import trigger          from './trigger';
 import subscribe        from './subscribe';
-import methodFixed      from './methodFixed';
 import createMiddleware from './createMiddleware';
 
  export function extend(save,update){
@@ -22,36 +21,44 @@ import createMiddleware from './createMiddleware';
 
 export default class State{
     constructor( initial = {}, middleware = [], subscribe = [] ){
-        methodFixed(
-            this, '_middleware', createMiddleware(
-                ...middleware.map((middleware)=>(next,update)=>middleware(this,next,update)),
-                (update)=>{
-                    if( typeof update === 'object' ) extend(this,update);
-                    trigger(this._subscribe,this);
-                    return this;
-                }
-            )
+        middleware = createMiddleware(
+            ...middleware.map((middleware)=>(next,update)=>middleware(this,next,update)),
+            (update)=>{
+                if( typeof update === 'object' ) extend(this,update);
+                trigger(this._.subscribe,this);
+                return this;
+            }
         )
-        methodFixed(
-            this, '_subscribe', subscribe
+        Object.defineProperty(
+            this,
+            '_',
+            {
+                enumerable  : false,
+                configurable: false,
+                writable    : false,
+                value       : {
+                    subscribe,
+                    middleware
+                }
+            }
         )
         this.update(initial);
     }
     update(...args){
-        this.preventDefault = true;
-        let response =  this._middleware(...args);
-                        delete this.preventDefault;
+        this._.preventDefault = true;
+        let response =  this._.middleware(...args);
+                        delete this._.preventDefault;
         return response;
     }
     subscribe( handler ){
         if( handler instanceof State && handler !== this ){
-            return subscribe(this._subscribe,()=>{
-                if( !handler.preventDefault ) {
-                    trigger(handler._subscribe,handler)
+            return subscribe(this._.subscribe,()=>{
+                if( !handler._.preventDefault ) {
+                    trigger(handler._.subscribe,handler)
                 }
             },true);
         }else{
-            return subscribe(this._subscribe,handler);
+            return subscribe(this._.subscribe,handler);
         }
     }
 }

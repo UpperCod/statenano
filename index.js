@@ -18,19 +18,6 @@ function subscribe(collection,save,once){
     }
 }
 
-function methodFixed(save,prop,value){
-    Object.defineProperty(
-        save,
-        prop,
-        {
-            enumerable  : false,
-            configurable: false,
-            writable    : false,
-            value: value
-        }
-    );
-}
-
 function createMiddleware(){
     var middleware = [], len = arguments.length;
     while ( len-- ) middleware[ len ] = arguments[ len ];
@@ -47,7 +34,7 @@ function extend(save,update){
     Object.keys(update)
             .forEach(function (prop){
                 // if( prop === 'update' || prop === 'subscribe' ) continue;
-                if( prop in save && save[prop] instanceof State ){
+                if( prop in save && save[prop] instanceof State$1 ){
                     save[prop].update(update[prop]);
                 }else{
                     if( typeof save[prop] === 'function' ){
@@ -60,53 +47,56 @@ function extend(save,update){
     return save;
 }
 
-var State = function State( initial, middleware, subscribe$$1 ){
+var State$1 = function State( initial, middleware, subscribe$$1 ){
     var this$1 = this;
     if ( initial === void 0 ) initial = {};
     if ( middleware === void 0 ) middleware = [];
     if ( subscribe$$1 === void 0 ) subscribe$$1 = [];
 
-    methodFixed(
-        this, '_middleware', createMiddleware.apply(
-            void 0, middleware.map(function (middleware){ return function (next,update){ return middleware(this$1,next,update); }; }).concat( [function (update){
-                if( typeof update === 'object' ) { extend(this$1,update); }
-                trigger(this$1._subscribe,this$1);
-                return this$1;
-            }] )
-        )
+    middleware = createMiddleware.apply(
+        void 0, middleware.map(function (middleware){ return function (next,update){ return middleware(this$1,next,update); }; }).concat( [function (update){
+            if( typeof update === 'object' ) { extend(this$1,update); }
+            trigger(this$1._.subscribe,this$1);
+            return this$1;
+        }] )
     );
-    methodFixed(
-        this, '_subscribe', subscribe$$1
+    Object.defineProperty(
+        this,
+        '_',
+        {
+            enumerable  : false,
+            configurable: false,
+            writable: false,
+            value   : {
+                subscribe: subscribe$$1,
+                middleware: middleware
+            }
+        }
     );
     this.update(initial);
 };
-State.prototype.update = function update (){
+State$1.prototype.update = function update (){
         var args = [], len = arguments.length;
         while ( len-- ) args[ len ] = arguments[ len ];
 
-    this.preventDefault = true;
-    var response =  (ref = this)._middleware.apply(ref, args);
-                    delete this.preventDefault;
+    this._.preventDefault = true;
+    var response =  (ref = this._).middleware.apply(ref, args);
+                    delete this._.preventDefault;
     return response;
         var ref;
 };
-State.prototype.subscribe = function subscribe$1 ( handler ){
-    if( handler instanceof State && handler !== this ){
-        return subscribe(this._subscribe,function (){
-            if( !handler.preventDefault ) {
-                trigger(handler._subscribe,handler);
+State$1.prototype.subscribe = function subscribe$1 ( handler ){
+    if( handler instanceof State$1 && handler !== this ){
+        return subscribe(this._.subscribe,function (){
+            if( !handler._.preventDefault ) {
+                trigger(handler._.subscribe,handler);
             }
         },true);
     }else{
-        return subscribe(this._subscribe,handler);
+        return subscribe(this._.subscribe,handler);
     }
 };
 
-var index = {
-    State: State,
-    createMiddleware: createMiddleware
-};
-
-return index;
+return State$1;
 
 })));
