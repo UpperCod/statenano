@@ -216,4 +216,4 @@ masterTodos.subscribe((state)=>{
 
 | npm | git | uso |
 |-----|-----|-----|
-| [preact-statenano] (https://www.npmjs.com/package/preact-statenano) | [preact-statenano] (https://github.com/UpperCod/preact-statenano) | es una pequeña biblioteca que permite sincronizar eventos de estado creados sobre la base de StateNano con componentes creados con preact todo gracias a los componentes de alto orden. |
+| [preact-statenano](https://www.npmjs.com/package/preact-statenano) | [preact-statenano](https://github.com/UpperCod/preact-statenano) | es una pequeña biblioteca que permite sincronizar eventos de estado creados sobre la base de StateNano con componentes creados con preact todo gracias a los componentes de alto orden. |
