@@ -6,6 +6,17 @@ StateNano es un pequeño manejador de estados con una api bastante sencilla, que
 
 las clases ofrecen una herencia simple y minimalista, StateNano aprobecha esto para componetizar estados en base a clases.
 
+### yarn
+
+```bash
+yarn add -D statenano
+```
+### npm
+
+```bash
+npm install -D statenano
+```
+
 ### Interfaz
 
 StateNano por defecto posee una interfaz simple con 2 metodos **update** y **subscribe**, update alimenta el estado con nuevas propiedades y a su vez notifica a los suscriptores cada actualización.
@@ -25,7 +36,7 @@ let state = new State( [ initialState = {} , middleware = [] ] )
 
 ### Ejemplo de Todo
 
-
+Este ejemplo muestra cómo puede implementar un Todo de una manera simple extendiendo State. Puede ver un ejemplo más completo en [codesandbox.io] (https://codesandbox.io/s/4xjvlqx870)
 
 ```javascript
 
@@ -199,3 +210,10 @@ masterTodos.subscribe((state)=>{
 
 ```
 > de esta forma cualquier cambio que ocurra dentro de cualquier **todo**, será notificado a los suscriptores del **masterTodo**. 
+
+
+## Plugins
+
+| npm | git | uso |
+|-----|-----|-----|
+| [preact-statenano] (https://www.npmjs.com/package/preact-statenano) | [preact-statenano] (https://github.com/UpperCod/preact-statenano) | es una pequeña biblioteca que permite sincronizar eventos de estado creados sobre la base de StateNano con componentes creados con preact todo gracias a los componentes de alto orden. |

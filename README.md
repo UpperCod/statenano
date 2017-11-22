@@ -6,6 +6,17 @@ StateNano is a small state handler with a fairly simple API, which exploits the 
 
 the classes offer a simple and minimalist inheritance, StateNano uses this to compose states based on classes.
 
+### yarn
+
+```bash
+yarn add -D statenano
+```
+### npm
+
+```bash
+npm install -D statenano
+```
+
 ### Interface
 
 StateNano by default has a simple interface with 2 methods **update** and **subscribe**, update feeds the state with new properties and in turn notifies the subscribers each update.
@@ -25,7 +36,7 @@ let state = new State( [ initialState = {} , middleware = [] ] )
 
 ### Example of Todo
 
-This example shows how you can implement an All in a simple way by extending State
+This example shows how you can implement an All in a simple way by extending State, You can see a more complete example in [codesandbox.io](https://codesandbox.io/s/4xjvlqx870)
 
 ```javascript
 
@@ -201,3 +212,9 @@ masterTodos.subscribe((state)=>{
 
 ```
 > in this way any change that occurs within any **todo**, will be notified to the subscribers of **masterTodo**.
+
+## Plugins
+
+| npm | git | use |
+|-----|-----|-----|
+| [preact-statenano](https://www.npmjs.com/package/preact-statenano) | [preact-statenano](https://github.com/UpperCod/preact-statenano) | is a small library that allows to synchronize state events created on the basis of StateNano with components created with preact all thanks to the high order components. | 
