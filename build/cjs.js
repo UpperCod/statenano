@@ -20,6 +20,9 @@ Subscriber.prototype.dispatch = function dispatch () {
     this.listeners.forEach(function (listener) { return listener.apply(void 0, args); });
 };
 
+/**
+ * alias of the property that points subscribers within the state class
+ */
 var event = "__event__";
 /**
  * The instance creates an object whose interaction methods are:
@@ -62,7 +65,8 @@ State.prototype.update = function update (updater) {
     if (typeof updater === "object") {
         if (!prevent) { ev.prevent = true; }
 
-        Object.keys(updater).map(function (prop) {
+        // Object.keys(updater).forEach(prop => {});
+        for (var prop in updater) {
             var next = updater[prop];
             if (this$1[prop] instanceof State) {
                 this$1[prop].update(next);
@@ -71,8 +75,7 @@ State.prototype.update = function update (updater) {
             } else {
                 this$1[prop] = next;
             }
-            return prop;
-        });
+        }
 
         if (!prevent) { ev.prevent = false; }
     }

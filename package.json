@@ -1,6 +1,6 @@
 {
   "name": "statenano",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "state management solution for Javascript applications",
   "main": "build/cjs.js",
   "module": "build/cjs.js",
