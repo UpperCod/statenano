@@ -27,34 +27,13 @@ import State from "statenano";
 
 let initState = { type: "sample" };
 
-let middleware = [
-    function log(next, state, update) {
-        console.log("update: ", update);
-        next(update);
-        console.log("state: ", state);
-    }
-];
 
-let state = new State(initState, middleware);
+let state = new State(initState);
 
 ```
 #### initialState
 
 as you noticed in the previous instance you can define an initial state as the first argument of **State**
-
-#### middleware
-
-As you will notice in the previous instance you can define a middleware array as the second argument of the State instance, then the principle of blocking this array of functions is taught
-
-```javascript
-
-export default function middlewareLog(next, state, update) {
-    console.log("update: ", update);
-    next(update);
-    console.log("state: ", state);
-}
-
-```
 
 ### instance.update([mixed objet])
 
@@ -76,11 +55,48 @@ state.update({ type: "sample" });
 
 allows you to subscribe to a status update
 
+## Inheritance 
+
+Statenano to be a class facilitates the edition of behavior based on the inheritance
+
+```javascript
+import State from "statenano";
+
+class Todo extends State{
+    constructor(){
+        super();
+        this.tasks = [];
+    }
+    addTask(task){
+        this.update({
+            tasks : this.tasks.concat({task})
+        })
+    }
+    removeTask(task){
+        this.update({
+            tasks : this.tasks.filter((save)=>save !== task)
+        })
+    }
+}
+
+
+let state = new Todo;
+
+    state.subscribe(()=>{
+        state.tasks.map((task)=>{
+            console.log(task)
+        })
+    })
+
+    state.addTask("Learn statenano");
+    
+```
+
 ### Examples
 
 | Tipo | link |
 |------|-----|
-|TODO|[4xjvlqx870 - CodeSandbox](https://codesandbox.io/s/3vomp01rkp)|
+|TODO|[CodeSandbox](https://codesandbox.io/s/3vomp01rkp)|
 |SHOP|[Productos - Bodeguita Agroecologica](http://www.bodeguitaagroecologica.cl/producto/)|
 
 

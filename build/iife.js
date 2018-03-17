@@ -1,158 +1,105 @@
 var Statenano = (function () {
 'use strict';
 
-/**
- * executes a callback array delivering as the first argument "argument"
- * @param {array} collection
- * @param {*} argument
- */
-function trigger(collection, argument) {
-    collection.forEach(function (handler) { return handler(argument); });
-}
+var Subscriber = function Subscriber(listeners) {
+    if ( listeners === void 0 ) listeners = [];
 
-/**
- * allows adding a new callback to an array
- * @param {array} collection
- * @param {function} save
- * @param {boolean} unique - avoid repeat subscription
- * @return {function} function that deletes the registry
- */
-function subscribe(collection, save, unique) {
-    if (unique && collection.indexOf(save) > -1) { return; }
-    collection.push(save);
-    return function () {
-        collection.splice(collection.indexOf(save) >>> 0, 1);
-    };
-}
-
-/**
- * allows to protect a function, through a chain of middleware functions
- * each middleware function will receive as the first argument the "next"
- * function to execute
- * @param {*} middleware
- * @example createMiddleware(
- *  (next,argument)=>next(100,2),
- *  (next,a,b)=>next(a*b),
- *  (total)=>console.log(total) //> 200
- * );
- * @returns {function}
- */
-function createMiddleware() {
-    var middleware = [], len = arguments.length;
-    while ( len-- ) middleware[ len ] = arguments[ len ];
-
-    return middleware.reduceRight(function (before, after) { return function () {
-            var args = [], len = arguments.length;
-            while ( len-- ) args[ len ] = arguments[ len ];
-
-            return after.apply(void 0, [ before ].concat( args ));
- }        }
-    );
-}
-
-/**
- * allows to extend and at the same instant execute in
- * case that the existing property in save is a function,
- * giving as a parameter the value taken from the object update
- * @param {object} save - Object to update the update properties
- * @param {object} update - object that will modify the save properties
- * @returns {object} save
- */
-function extend(save, update) {
-    Object.keys(update).forEach(function (prop) {
-        /**
-         * if the cursor points is an object from the state class
-         * dispatch the update function with the targeted properties
-         * to the instance
-         * @example state.update({ state2 : {type:"sample"} })
-         * for this example the object {type: "sample"} will be sent to state2
-         */
-        if (prop in save && save[prop] instanceof State) {
-            save[prop].update(update[prop]);
-        } else {
-            /**
-             * it is reiterated if a property inside save is a
-             * function this will resivir the value taken from update
-             * otherwise this will update the save object
-             */
-            if (typeof save[prop] === "function") {
-                save[prop](update[prop]);
-            } else {
-                save[prop] = update[prop];
-            }
-        }
-    });
-    return save;
-}
-
-var State = function State(initial, middleware, subscribe$$1) {
-    var this$1 = this;
-    if ( initial === void 0 ) initial = {};
-    if ( middleware === void 0 ) middleware = [];
-    if ( subscribe$$1 === void 0 ) subscribe$$1 = [];
-
-    /**
-     * It allows to protect the function that updates the instance
-     * middleware(next, state, update)
-     */
-    middleware = createMiddleware.apply(
-        void 0, middleware.map(function (middleware) { return function (next, update) { return middleware(next, this$1, update); }; }
-        ).concat( [function (update) {
-            if (typeof update === "object") { extend(this$1, update); }
-            trigger(this$1._.subscribe, this$1);
-            return this$1;
-        }] )
-    );
-    Object.defineProperty(this, "_", {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: {
-            subscribe: subscribe$$1,
-            middleware: middleware
-        }
-    });
-    this.update(initial);
+    this.listeners = listeners;
 };
-/**
- * send the parameters to the middleware
- * @param {*} args
- * @returns response middleware
- */
-State.prototype.update = function update () {
+Subscriber.prototype.subscribe = function subscribe (listener) {
+        var this$1 = this;
+
+    this.listeners.push(listener);
+    return function () {
+        this$1.listeners.splice(this$1.listeners.indexOf(listener) >>> 0, 1);
+    };
+};
+Subscriber.prototype.dispatch = function dispatch () {
         var args = [], len = arguments.length;
         while ( len-- ) args[ len ] = arguments[ len ];
 
-    this._.preventDefault = true;
-    var response = (ref = this._).middleware.apply(ref, args);
-    delete this._.preventDefault;
-    return response;
-        var ref;
+    this.listeners.forEach(function (listener) { return listener.apply(void 0, args); });
+};
+
+var event = "__event__";
+/**
+ * The instance creates an object whose interaction methods are:
+ * @method update(updater) : void
+ * @method subscribe(listener) : function
+ */
+var State = function State(state) {
+    if ( state === void 0 ) state = {};
+
+    Object.defineProperty(this, event, {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: new Subscriber()
+    });
+    this.update(state);
 };
 /**
- * You can subscribe to the changes of the state simply by
- * giving as an argument to subscribe a function, in the
- * same way you can subscribe one state to another giving
- * as an argument the state to subscribe, in this way all
- * the changes that occur to the subscribed state will
- * dispatch the subscribers from the listening state
- * @param { function, State } handler
- * @returns { function } allows you to remove the subscription
+ * method responsible for updating and reporting changes in the state
+ * as you will notice update executes functions that may exist within
+ * the instance, through prevent manages to generate a bottleneck
+ * that will only send a notification to the subscribers for the
+ * parent update, avoiding notifying the subscribers by multiple
+ * update in the same generated queue by update
+ * @param {any} [updater]
  */
-State.prototype.subscribe = function subscribe$1 (handler) {
-    if (handler instanceof State && handler !== this) {
-        return subscribe(
-            this._.subscribe,
-            function () {
-                if (!handler._.preventDefault) {
-                    trigger(handler._.subscribe, handler);
-                }
-            },
-            true
-        );
-    } else {
-        return subscribe(this._.subscribe, handler);
+State.prototype.update = function update (updater) {
+        var this$1 = this;
+
+    var ev = this[event],
+        /**
+         * The preventive behavior is important since it avoids sending
+         * multiple subscribers to the subscribers, assuring a correct
+         * hierarchy of notifications, fabpr noting that the subscriber
+         * also makes use of prevent, to avoid sending in the same
+         * form reports that are already anticipated to be resivided.
+         */
+        prevent = ev.prevent;
+
+    if (typeof updater === "object") {
+        if (!prevent) { ev.prevent = true; }
+
+        Object.keys(updater).map(function (prop) {
+            var next = updater[prop];
+            if (this$1[prop] instanceof State) {
+                this$1[prop].update(next);
+            } else if (typeof this$1[prop] === "function") {
+                this$1[prop](next);
+            } else {
+                this$1[prop] = next;
+            }
+            return prop;
+        });
+
+        if (!prevent) { ev.prevent = false; }
     }
+
+    if (!ev.prevent) { ev.dispatch(this); }
+};
+/**
+ * method in charge of subscribing functions or other states to changes
+ * dispatched by update of the instance
+ * @param { Function, State } listener - subscribes to changes in the instance
+ * @return {Function} - returns a function that removes the subscriber from the instance
+ */
+State.prototype.subscribe = function subscribe (listener) {
+    if (listener instanceof State) {
+        /**
+         * this subscriber dispatches notifications to the subscribers of the state
+         * delivered as a listener of this instance, prevent ensures that the notifications
+         * already assigned are respected
+         */
+        return this.subscribe(function () {
+            var ev = listener[event];
+            if (ev.prevent) { return; }
+            ev.dispatch(listener);
+        });
+    }
+    return this[event].subscribe(listener);
 };
 
 return State;

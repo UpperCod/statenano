@@ -42,21 +42,7 @@ let state = new State(initState, middleware);
 
 como notara en la instancia anterior ud puede definir un estado inicial como primer argumento de **State**
 
-#### middleware
-
-Como notara en la instancia anterior ud puede definir un array de middleware como segundo argumento, a continuación se enseña el principio de bloqueo de este  array de funciones
-
-```javascript
-
-export default function middlewareLog(next, state, update) {
-    console.log("update: ", update);
-    next(update);
-    console.log("state: ", state);
-}
-
-```
-
-### instance.update([mixed objet])
+### instance.update(object) [object]
 
 permite alertar a los suscriptores un cambio dentro del estado
 
@@ -76,11 +62,48 @@ state.update({ type: "sample" });
 
 permite suscribirse ante una actualización del estado
 
+## Herencia
+
+Statenano al ser un clase fasilita la edicion del comportamiento a base de la herencia
+
+```javascript
+import State from "statenano";
+
+class Todo extends State{
+    constructor(){
+        super();
+        this.tasks = [];
+    }
+    addTask(task){
+        this.update({
+            tasks : this.tasks.concat({task})
+        })
+    }
+    removeTask(task){
+        this.update({
+            tasks : this.tasks.filter((save)=>save !== task)
+        })
+    }
+}
+
+
+let state = new Todo;
+
+    state.subscribe(()=>{
+        state.tasks.map((task)=>{
+            console.log(task)
+        })
+    })
+
+    state.addTask("Learn statenano");
+    
+```
+
 ### Ejemplos
 
 | Tipo | link |
 |------|-----|
-|TODO|[4xjvlqx870 - CodeSandbox](https://codesandbox.io/s/3vomp01rkp)|
+|TODO|[CodeSandbox](https://codesandbox.io/s/3vomp01rkp)|
 |SHOP|[Productos - Bodeguita Agroecologica](http://www.bodeguitaagroecologica.cl/producto/)|
 
 
