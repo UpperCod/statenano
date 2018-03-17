@@ -69,8 +69,7 @@ State.prototype.update = function update (updater) {
     if (typeof updater === "object") {
         if (!prevent) { ev.prevent = true; }
 
-        // Object.keys(updater).forEach(prop => {});
-        for (var prop in updater) {
+        Object.keys(updater).forEach(function (prop) {
             var next = updater[prop];
             if (this$1[prop] instanceof State) {
                 this$1[prop].update(next);
@@ -79,7 +78,7 @@ State.prototype.update = function update (updater) {
             } else {
                 this$1[prop] = next;
             }
-        }
+        });
 
         if (!prevent) { ev.prevent = false; }
     }

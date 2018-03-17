@@ -45,8 +45,7 @@ export default class State {
         if (typeof updater === "object") {
             if (!prevent) ev.prevent = true;
 
-            // Object.keys(updater).forEach(prop => {});
-            for (let prop in updater) {
+            Object.keys(updater).forEach(prop => {
                 let next = updater[prop];
                 if (this[prop] instanceof State) {
                     this[prop].update(next);
@@ -55,7 +54,7 @@ export default class State {
                 } else {
                     this[prop] = next;
                 }
-            }
+            });
 
             if (!prevent) ev.prevent = false;
         }
