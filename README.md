@@ -96,7 +96,7 @@ let state = new Todo;
 
 | Tipo | link |
 |------|-----|
-|TODO|[CodeSandbox](https://codesandbox.io/s/3vomp01rkp)|
+|TODO|[CodeSandbox](https://codesandbox.io/s/2435rkwjzj)|
 |SHOP|[Productos - Bodeguita Agroecologica](http://www.bodeguitaagroecologica.cl/producto/)|
 
 
