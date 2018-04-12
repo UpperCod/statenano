@@ -1,9 +1,5 @@
 import Subscriber from "./Subscriber";
 /**
- * alias of the property that points subscribers within the state class
- */
-export let event = "__event__";
-/**
  * The instance creates an object whose interaction methods are:
  * @method update(updater) : void
  * @method subscribe(listener) : function
@@ -14,7 +10,7 @@ export default class State {
      * @param {Object} [state] - the initial state
      */
     constructor(state = {}) {
-        Object.defineProperty(this, event, {
+        Object.defineProperty(this, "_", {
             enumerable: false,
             configurable: false,
             writable: false,
@@ -32,7 +28,7 @@ export default class State {
      * @param {any} [updater]
      */
     update(updater) {
-        let ev = this[event],
+        let ev = this._,
             /**
              * The preventive behavior is important since it avoids sending
              * multiple subscribers to the subscribers, assuring a correct
@@ -46,13 +42,13 @@ export default class State {
             if (!prevent) ev.prevent = true;
 
             Object.keys(updater).forEach(prop => {
-                let next = updater[prop];
-                if (this[prop] instanceof State) {
-                    this[prop].update(next);
+                let value = updater[prop];
+                if (prop in this && this[prop] instanceof State) {
+                    this[prop].update(value);
                 } else if (typeof this[prop] === "function") {
-                    this[prop](next);
+                    this[prop](value);
                 } else {
-                    this[prop] = next;
+                    this[prop] = value;
                 }
             });
 
@@ -75,11 +71,11 @@ export default class State {
              * already assigned are respected
              */
             return this.subscribe(() => {
-                let ev = listener[event];
+                let ev = listener._;
                 if (ev.prevent) return;
                 ev.dispatch(listener);
             });
         }
-        return this[event].subscribe(listener);
+        return this._.subscribe(listener);
     }
 }

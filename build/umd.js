@@ -25,10 +25,6 @@ Subscriber.prototype.dispatch = function dispatch () {
 };
 
 /**
- * alias of the property that points subscribers within the state class
- */
-var event = "__event__";
-/**
  * The instance creates an object whose interaction methods are:
  * @method update(updater) : void
  * @method subscribe(listener) : function
@@ -36,7 +32,7 @@ var event = "__event__";
 var State = function State(state) {
     if ( state === void 0 ) state = {};
 
-    Object.defineProperty(this, event, {
+    Object.defineProperty(this, "_", {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -56,7 +52,7 @@ var State = function State(state) {
 State.prototype.update = function update (updater) {
         var this$1 = this;
 
-    var ev = this[event],
+    var ev = this._,
         /**
          * The preventive behavior is important since it avoids sending
          * multiple subscribers to the subscribers, assuring a correct
@@ -70,13 +66,13 @@ State.prototype.update = function update (updater) {
         if (!prevent) { ev.prevent = true; }
 
         Object.keys(updater).forEach(function (prop) {
-            var next = updater[prop];
-            if (this$1[prop] instanceof State) {
-                this$1[prop].update(next);
+            var value = updater[prop];
+            if (prop in this$1 && this$1[prop] instanceof State) {
+                this$1[prop].update(value);
             } else if (typeof this$1[prop] === "function") {
-                this$1[prop](next);
+                this$1[prop](value);
             } else {
-                this$1[prop] = next;
+                this$1[prop] = value;
             }
         });
 
@@ -99,12 +95,12 @@ State.prototype.subscribe = function subscribe (listener) {
          * already assigned are respected
          */
         return this.subscribe(function () {
-            var ev = listener[event];
+            var ev = listener._;
             if (ev.prevent) { return; }
             ev.dispatch(listener);
         });
     }
-    return this[event].subscribe(listener);
+    return this._.subscribe(listener);
 };
 
 return State;
