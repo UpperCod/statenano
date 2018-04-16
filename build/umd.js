@@ -79,7 +79,7 @@ State.prototype.update = function update (updater) {
  */
 State.prototype.subscribe = function subscribe (listener) {
     if (listener instanceof State) {
-        return this._.subscribe(function () {
+        return this.subscribe(function () {
             if (listener._.prevent) { return; }
             listener._.dispatch(listener);
         });
