@@ -1,79 +1,63 @@
 import Subscriber from "./Subscriber";
 /**
  * The instance creates an object whose interaction methods are:
- * @method update(updater) : void
+ * @method update(updater) : void -
  * @method subscribe(listener) : function
  */
 export default class State {
     /**
-     *
-     * @param {Object} [state] - the initial state
+     * defines the initial state, given as the first parameter
+     * @param {object} state
      */
     constructor(state = {}) {
         Object.defineProperty(this, "_", {
-            enumerable: false,
-            configurable: false,
-            writable: false,
             value: new Subscriber()
         });
         this.update(state);
     }
     /**
-     * method responsible for updating and reporting changes in the state
-     * as you will notice update executes functions that may exist within
-     * the instance, through prevent manages to generate a bottleneck
-     * that will only send a notification to the subscribers for the
-     * parent update, avoiding notifying the subscribers by multiple
-     * update in the same generated queue by update
-     * @param {any} [updater]
+     * allows you to notify subscribers of a change in the state
+     * this in turn protects subscribers through the "prevent" property
+     * the dispatch execution is blocked, if one already exists within update
+     * @param {object} [updater]
      */
     update(updater) {
-        let ev = this._,
-            /**
-             * The preventive behavior is important since it avoids sending
-             * multiple subscribers to the subscribers, assuring a correct
-             * hierarchy of notifications, fabpr noting that the subscriber
-             * also makes use of prevent, to avoid sending in the same
-             * form reports that are already anticipated to be resivided.
-             */
-            prevent = ev.prevent;
+        let prevent = this._.prevent;
 
         if (typeof updater === "object") {
-            if (!prevent) ev.prevent = true;
+            if (!prevent) this._.prevent = true;
 
             Object.keys(updater).forEach(prop => {
                 let value = updater[prop];
-                if (prop in this && this[prop] instanceof State) {
-                    this[prop].update(value);
-                } else if (typeof this[prop] === "function") {
-                    this[prop](value);
-                } else {
-                    this[prop] = value;
+                if (prop in this) {
+                    if (this[prop] instanceof State) {
+                        this[prop].update(value);
+                        return;
+                    }
+                    if (typeof this[prop] === "function") {
+                        this[prop](value);
+                        return;
+                    }
                 }
+                this[prop] = value;
             });
 
-            if (!prevent) ev.prevent = false;
+            if (!prevent) this._.prevent = false;
         }
 
-        if (!ev.prevent) ev.dispatch(this);
+        if (!this._.prevent) this._.dispatch(this);
     }
     /**
-     * method in charge of subscribing functions or other states to changes
-     * dispatched by update of the instance
-     * @param { Function, State } listener - subscribes to changes in the instance
-     * @return {Function} - returns a function that removes the subscriber from the instance
+     *
+     * @param {object|function} listener - register a subscriber to state changes
+     * if this is an instance of the State class, register the subscribers of
+     * the instance to the state changes
      */
     subscribe(listener) {
         if (listener instanceof State) {
-            /**
-             * this subscriber dispatches notifications to the subscribers of the state
-             * delivered as a listener of this instance, prevent ensures that the notifications
-             * already assigned are respected
-             */
             return this.subscribe(() => {
-                let ev = listener._;
-                if (ev.prevent) return;
-                ev.dispatch(listener);
+                if (listener._.prevent) return;
+                listener._.dispatch(listener);
             });
         }
         return this._.subscribe(listener);

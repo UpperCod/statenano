@@ -22,78 +22,62 @@ Subscriber.prototype.dispatch = function dispatch () {
 
 /**
  * The instance creates an object whose interaction methods are:
- * @method update(updater) : void
+ * @method update(updater) : void -
  * @method subscribe(listener) : function
  */
 var State = function State(state) {
     if ( state === void 0 ) state = {};
 
     Object.defineProperty(this, "_", {
-        enumerable: false,
-        configurable: false,
-        writable: false,
         value: new Subscriber()
     });
     this.update(state);
 };
 /**
- * method responsible for updating and reporting changes in the state
- * as you will notice update executes functions that may exist within
- * the instance, through prevent manages to generate a bottleneck
- * that will only send a notification to the subscribers for the
- * parent update, avoiding notifying the subscribers by multiple
- * update in the same generated queue by update
- * @param {any} [updater]
+ * allows you to notify subscribers of a change in the state
+ * this in turn protects subscribers through the "prevent" property
+ * the dispatch execution is blocked, if one already exists within update
+ * @param {object} [updater]
  */
 State.prototype.update = function update (updater) {
         var this$1 = this;
 
-    var ev = this._,
-        /**
-         * The preventive behavior is important since it avoids sending
-         * multiple subscribers to the subscribers, assuring a correct
-         * hierarchy of notifications, fabpr noting that the subscriber
-         * also makes use of prevent, to avoid sending in the same
-         * form reports that are already anticipated to be resivided.
-         */
-        prevent = ev.prevent;
+    var prevent = this._.prevent;
 
     if (typeof updater === "object") {
-        if (!prevent) { ev.prevent = true; }
+        if (!prevent) { this._.prevent = true; }
 
         Object.keys(updater).forEach(function (prop) {
             var value = updater[prop];
-            if (prop in this$1 && this$1[prop] instanceof State) {
-                this$1[prop].update(value);
-            } else if (typeof this$1[prop] === "function") {
-                this$1[prop](value);
-            } else {
-                this$1[prop] = value;
+            if (prop in this$1) {
+                if (this$1[prop] instanceof State) {
+                    this$1[prop].update(value);
+                    return;
+                }
+                if (typeof this$1[prop] === "function") {
+                    this$1[prop](value);
+                    return;
+                }
             }
+            this$1[prop] = value;
         });
 
-        if (!prevent) { ev.prevent = false; }
+        if (!prevent) { this._.prevent = false; }
     }
 
-    if (!ev.prevent) { ev.dispatch(this); }
+    if (!this._.prevent) { this._.dispatch(this); }
 };
 /**
- * method in charge of subscribing functions or other states to changes
- * dispatched by update of the instance
- * @param { Function, State } listener - subscribes to changes in the instance
- * @return {Function} - returns a function that removes the subscriber from the instance
+ *
+ * @param {object|function} listener - register a subscriber to state changes
+ * if this is an instance of the State class, register the subscribers of
+ * the instance to the state changes
  */
 State.prototype.subscribe = function subscribe (listener) {
     if (listener instanceof State) {
-        /**
-         * this subscriber dispatches notifications to the subscribers of the state
-         * delivered as a listener of this instance, prevent ensures that the notifications
-         * already assigned are respected
-         */
-        return this.subscribe(function () {
-            var ev = listener._;
-            if (ev.prevent) { return; }
-            ev.dispatch(listener);
+        return this._.subscribe(function () {
+            if (listener._.prevent) { return; }
+            listener._.dispatch(listener);
         });
     }
     return this._.subscribe(listener);
